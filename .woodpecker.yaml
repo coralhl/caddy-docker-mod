@@ -1,0 +1,11 @@
+steps:
+  build:
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: dockerhub_username
+      password:
+        from_secret: dockerhub_password
+      repo: coralhl/caddy-mod
+      tags:
+      - latest
