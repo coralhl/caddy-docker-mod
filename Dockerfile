@@ -35,12 +35,12 @@ RUN set -eux \
     && groupmod -g 1000 users \
     && useradd -u 911 -U -d /home/user -s /bin/false abc \
     && usermod -G users abc \
-	&& mkdir -p \
-		  /app/conf/caddy \
-		  /app/data/caddy \
-		  /app/logs \
-		  /usr/share/caddy \
-		  /home/user \
+    && mkdir -p \
+        /app/conf/caddy \
+        /app/data/caddy \
+        /app/logs \
+        /usr/share/caddy \
+        /home/user \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     #&& mkdir -p /var/log/supervisor \
     && chmod +x /start.sh \
