@@ -13,7 +13,7 @@ RUN xcaddy build \
 FROM alpine:3.19
 
 # Bring in utils
-RUN apk add --no-cache bash bash-completion jq mailcap \
+RUN apk add --no-cache bash bash-completion jq mailcap shadow \
 # Bring in tzdata so users could set the timezones through the environment variables
     && apk add --no-cache tzdata \
 # Bring in curl and ca-certificates to make registering on DNS SD easier
@@ -25,11 +25,13 @@ RUN echo 'hosts: files dns' > /etc/nsswitch.conf
 # See https://caddyserver.com/docs/conventions#file-locations for details
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
-COPY root/app/ /app
-COPY root/Caddyfile /tmp/Caddyfile
-COPY root/config.yaml /tmp/config.yaml
-COPY root/lsiown /usr/bin/lsiown
-COPY root/start.sh /start.sh
+COPY files/app/ /app
+COPY files/Caddyfile /tmp/Caddyfile
+COPY files/config.yaml /tmp/config.yaml
+COPY files/lsiown /usr/bin/lsiown
+COPY files/start.sh /start.sh
+
+ENV TZ=Europe/Moscow
 
 RUN set -eux \
     && groupmod -g 1000 users \
@@ -48,8 +50,6 @@ RUN set -eux \
 
 #ENV XDG_CONFIG_HOME /app/conf
 #ENV XDG_DATA_HOME /app/data
-
-ENV TZ=Europe/Moscow
 
 EXPOSE 8080 8443
 
