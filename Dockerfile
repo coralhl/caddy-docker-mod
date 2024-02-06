@@ -3,8 +3,10 @@ FROM golang:alpine AS builder
 RUN apk add --no-cache git ca-certificates
 RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 RUN xcaddy build \
+    --with github.com/caddy-dns/desec \
     --with github.com/mholt/caddy-l4 \
     --with github.com/abiosoft/caddy-yaml \
+	--with github.com/hslatman/caddy-crowdsec-bouncer/crowdsec \
     --output /usr/bin/caddy && chmod +x /usr/bin/caddy
 
 FROM alpine:3.19
@@ -18,7 +20,7 @@ RUN set -eux; \
 		/usr/share/caddy
 # set up nsswitch.conf for Go's "netgo" implementation
 # - https://github.com/docker-library/golang/blob/1eb096131592bcbc90aa3b97471811c798a93573/1.14/alpine3.12/Dockerfile#L9
-RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
+RUN echo 'hosts: files dns' > /etc/nsswitch.conf
 # See https://caddyserver.com/docs/conventions#file-locations for details
 
 ENV XDG_CONFIG_HOME /config
