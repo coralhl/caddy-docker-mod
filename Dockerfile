@@ -31,7 +31,7 @@ COPY root/config.yaml /tmp/config.yaml
 COPY root/lsiown /usr/bin/lsiown
 COPY root/start.sh /start.sh
 
-RUN set -eux; \
+RUN set -eux \
     && groupmod -g 1000 users \
     && useradd -u 911 -U -d /home/user -s /bin/false abc \
     && usermod -G users abc \
