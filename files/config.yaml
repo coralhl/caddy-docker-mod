@@ -12,7 +12,7 @@ apps:
         routes:
           - handle:
               - handler: vars
-                root: /app/www
+                root: /var/www
           - handle:
               - abort: true
                 handler: static_response

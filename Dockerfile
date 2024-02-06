@@ -13,7 +13,7 @@ RUN xcaddy build \
 FROM alpine:3.19
 
 # Bring in utils
-RUN apk add --no-cache bash bash-completion jq mailcap shadow \
+RUN apk add --no-cache bash bash-completion jq mailcap supervisor shadow \
 # Bring in tzdata so users could set the timezones through the environment variables
     && apk add --no-cache tzdata \
 # Bring in curl and ca-certificates to make registering on DNS SD easier
@@ -25,11 +25,13 @@ RUN echo 'hosts: files dns' > /etc/nsswitch.conf
 # See https://caddyserver.com/docs/conventions#file-locations for details
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
-COPY files/app/ /app
-COPY files/Caddyfile /tmp/Caddyfile
-COPY files/config.yaml /tmp/config.yaml
+COPY files/supervisord-caddy.conf /etc/supervisord-caddy.conf
+COPY files/supervisord-yaml.conf /etc/supervisord-yaml.conf
+COPY files/www/ /var/www
 COPY files/lsiown /usr/bin/lsiown
 COPY files/start.sh /start.sh
+COPY files/Caddyfile /tmp/Caddyfile
+COPY files/config.yaml /tmp/config.yaml
 
 ENV TZ=Europe/Moscow
 
@@ -44,12 +46,9 @@ RUN set -eux \
         /usr/share/caddy \
         /home/user \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
-    #&& mkdir -p /var/log/supervisor \
+    && mkdir -p /var/log/supervisor \
     && chmod +x /start.sh \
     && chmod +x /usr/bin/lsiown
-
-#ENV XDG_CONFIG_HOME /app/conf
-#ENV XDG_DATA_HOME /app/data
 
 EXPOSE 8080 8443
 
