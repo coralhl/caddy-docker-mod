@@ -1,0 +1,7 @@
+.git
+.github
+.gitattributes
+.woodpecker.yaml
+build.sh
+LICENSE
+README.md

@@ -1,0 +1,83 @@
+---
+apps:
+  http:
+    http_port: 8080
+    https_port: 8443
+    servers:
+      srv0:
+        listen:
+          - :8080
+        logs:
+          default_logger_name: log0
+        routes:
+          - handle:
+              - handler: vars
+                root: /app/www
+          - handle:
+              - abort: true
+                handler: static_response
+            match:
+              - not:
+                  - remote_ip:
+                      ranges:
+                        - 192.168.0.0/16
+                        - 172.16.0.0/12
+                        - 10.0.0.0/8
+                        - 127.0.0.1/8
+                        - fd00::/8
+                        - ::1
+          - handle:
+              - handler: file_server
+                hide:
+                  - /config/Caddyfile
+      srv1:
+        listen:
+          - :8443
+        logs:
+          logger_names:
+            sub.yourdomain.com: log1
+        routes:
+          - handle:
+              - handler: subroute
+                routes:
+                  - handle:
+                      - handler: headers
+                        response:
+                          set:
+                            Referrer-Policy:
+                              - strict-origin
+                            Strict-Transport-Security:
+                              - max-age=31536000; includeSubDomains;
+                            X-Content-Type-Options:
+                              - nosniff
+                            X-Frame-Options:
+                              - SAMEORIGIN
+                            X-Robots-Tag:
+                              - noindex, nofollow, nosnippet, noarchive
+                      - handler: reverse_proxy
+                        upstreams:
+                          - dial: server:8080
+            match:
+              - host:
+                  - sub.yourdomain.com
+            terminal: true
+logging:
+  logs:
+    default:
+      exclude:
+        - http.log.access.log0
+        - http.log.access.log1
+    log0:
+      include:
+        - http.log.access.log0
+      level: WARN
+      writer:
+        filename: /app/logs/access.log
+        output: file
+    log1:
+      include:
+        - http.log.access.log1
+      level: WARN
+      writer:
+        filename: /app/logs/access.log
+        output: file

@@ -3,33 +3,56 @@ FROM golang:alpine AS builder
 RUN apk add --no-cache git ca-certificates
 RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 RUN xcaddy build \
+    --with github.com/mholt/caddy-ratelimit \
+    --with github.com/abiosoft/caddy-yaml \
     --with github.com/caddy-dns/desec \
     --with github.com/mholt/caddy-l4 \
-    --with github.com/abiosoft/caddy-yaml \
 	--with github.com/hslatman/caddy-crowdsec-bouncer/crowdsec \
     --output /usr/bin/caddy && chmod +x /usr/bin/caddy
 
 FROM alpine:3.19
 
-RUN apk add --no-cache ca-certificates mailcap
-RUN set -eux; \
-	mkdir -p \
-		/config/caddy \
-		/data/caddy \
-		/etc/caddy \
-		/usr/share/caddy
-# set up nsswitch.conf for Go's "netgo" implementation
+# Bring in utils
+RUN apk add --no-cache bash bash-completion jq mailcap \
+# Bring in tzdata so users could set the timezones through the environment variables
+    && apk add --no-cache tzdata \
+# Bring in curl and ca-certificates to make registering on DNS SD easier
+    && apk add --no-cache curl ca-certificates
+
+# Set up nsswitch.conf for Go's "netgo" implementation
 # - https://github.com/docker-library/golang/blob/1eb096131592bcbc90aa3b97471811c798a93573/1.14/alpine3.12/Dockerfile#L9
 RUN echo 'hosts: files dns' > /etc/nsswitch.conf
 # See https://caddyserver.com/docs/conventions#file-locations for details
 
-ENV XDG_CONFIG_HOME /config
-ENV XDG_DATA_HOME /data
-
-EXPOSE 80
-EXPOSE 443
-EXPOSE 2019
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
-WORKDIR /srv
+COPY root/app/ /app
+COPY root/Caddyfile /tmp/Caddyfile
+COPY root/config.yaml /tmp/config.yaml
+COPY root/lsiown /usr/bin/lsiown
+COPY root/start.sh /start.sh
 
-CMD ["caddy", "run", "--config", "/etc/caddy/config.yaml", "--adapter", "yaml"]
+RUN set -eux; \
+    && groupmod -g 1000 users \
+    && useradd -u 911 -U -d /home/user -s /bin/false abc \
+    && usermod -G users abc \
+	&& mkdir -p \
+		  /app/conf/caddy \
+		  /app/data/caddy \
+		  /app/logs \
+		  /usr/share/caddy \
+		  /home/user \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+    #&& mkdir -p /var/log/supervisor \
+    && chmod +x /start.sh \
+    && chmod +x /usr/bin/lsiown
+
+#ENV XDG_CONFIG_HOME /app/conf
+#ENV XDG_DATA_HOME /app/data
+
+ENV TZ=Europe/Moscow
+
+EXPOSE 8080 8443
+
+WORKDIR /app
+
+CMD ["/start.sh"]
