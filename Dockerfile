@@ -29,6 +29,7 @@ COPY files/supervisord-caddy.conf /etc/supervisord-caddy.conf
 COPY files/supervisord-yaml.conf /etc/supervisord-yaml.conf
 COPY files/www/ /var/www
 COPY files/lsiown /usr/bin/lsiown
+COPY files/build-json.sh /usr/bin/build-json
 COPY files/start.sh /start.sh
 COPY files/Caddyfile /tmp/Caddyfile
 COPY files/config.yaml /tmp/config.yaml
@@ -48,7 +49,8 @@ RUN set -eux \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     && mkdir -p /var/log/supervisor \
     && chmod +x /start.sh \
-    && chmod +x /usr/bin/lsiown
+    && chmod +x /usr/bin/lsiown \
+    && chmod +x /usr/bin/build-json
 
 EXPOSE 8080 8443
 

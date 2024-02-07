@@ -36,41 +36,46 @@ DATA_DIR                = $DATA_DIR
 LOGS_DIR                = $LOGS_DIR
 ───────────────────────────────────────
 CONF_TYPE               = $CONF_TYPE
+LAYER4                  = $LAYER4
 ───────────────────────────────────────
 "
 
 ### Set the desired timezone
 if [ ! -z "$TZ" ]; then
-  rm -f /etc/localtime && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    rm -f /etc/localtime && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 fi
 
-
 caddy_start() {
-  if [[ ! -f "${CONF_DIR}/Caddyfile" ]]; then
-      echo "Installing default \"Caddyfile\"..."
-      cp "/tmp/Caddyfile" "${CONF_DIR}/Caddyfile"
-  fi
-  exec /usr/bin/supervisord -n -c /etc/supervisord-caddy.conf
+    if [[ ! -f "${CONF_DIR}/Caddyfile" ]]; then
+        echo "Installing default \"Caddyfile\"..."
+        cp "/tmp/Caddyfile" "${CONF_DIR}/Caddyfile"
+    fi
+    if [ ! -z "$LAYER4" ]; then
+        /usr/bin/build-json "${LAYER4}"
+    else
+        /usr/bin/build-json ""
+    fi
+    exec /usr/bin/supervisord -n -c /etc/supervisord-caddy.conf
 }
 
 yaml_start() {
-  if [[ ! -f "${CONF_DIR}/config.yaml" ]]; then
-      echo "Installing default \"config.yaml\"..."
-      cp "/tmp/config.yaml" "${CONF_DIR}/config.yaml"
-  fi
-  exec /usr/bin/supervisord -n -c /etc/supervisord-yaml.conf
+    if [[ ! -f "${CONF_DIR}/config.yaml" ]]; then
+        echo "Installing default \"config.yaml\"..."
+        cp "/tmp/config.yaml" "${CONF_DIR}/config.yaml"
+    fi
+    exec /usr/bin/supervisord -n -c /etc/supervisord-yaml.conf
 }
 
 if [ ! -z "$CONF_TYPE" ]; then
-  if [[ "$CONF_TYPE" == "yaml" ]]; then
-    yaml_start
-  fi
-  if [[ "$CONF_TYPE" == "caddy" ]]; then
-    caddy_start
-  fi
+    if [[ "$CONF_TYPE" == "yaml" ]]; then
+        yaml_start
+    fi
+    if [[ "$CONF_TYPE" == "caddy" ]]; then
+        caddy_start
+    fi
 else
-  caddy_start
-  CONF_TYPE="caddy"
+    caddy_start
+    CONF_TYPE="caddy"
 fi
 
 lsiown -R abc:abc "$CONF_DIR"
