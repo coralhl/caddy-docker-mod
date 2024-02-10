@@ -12,7 +12,7 @@ RUN xcaddy build \
     --with github.com/mholt/caddy-l4/modules/l4proxy \
     --with github.com/mholt/caddy-l4/modules/l4subroute \
     --with github.com/mholt/caddy-l4/modules/l4proxyprotocol \
-    --with github.com/mholt/caddy-l4/modules/l4echo
+    --with github.com/mholt/caddy-l4/modules/l4echo \
 	--with github.com/hslatman/caddy-crowdsec-bouncer/crowdsec \
     --output /usr/bin/caddy && chmod +x /usr/bin/caddy
 
