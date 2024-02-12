@@ -17,7 +17,7 @@ RUN apk add --no-cache bash bash-completion jq mailcap supervisor shadow \
 # Bring in tzdata so users could set the timezones through the environment variables
     && apk add --no-cache tzdata \
 # Bring in curl and ca-certificates to make registering on DNS SD easier
-    && apk add --no-cache curl ca-certificates
+    && apk add --no-cache curl ca-certificates nss-tools
 
 # Set up nsswitch.conf for Go's "netgo" implementation
 # - https://github.com/docker-library/golang/blob/1eb096131592bcbc90aa3b97471811c798a93573/1.14/alpine3.12/Dockerfile#L9
