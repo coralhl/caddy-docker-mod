@@ -66,12 +66,23 @@ yaml_start() {
     exec /usr/bin/supervisord -n -c /etc/supervisord-yaml.conf
 }
 
+json_start() {
+    if [[ ! -f "${CONF_DIR}/config.json" ]]; then
+        echo "Installing default \"config.json\"..."
+        cp "/tmp/config.json" "${CONF_DIR}/config.json"
+    fi
+    exec /usr/bin/supervisord -n -c /etc/supervisord-caddy.conf
+}
+
 if [ ! -z "$CONF_TYPE" ]; then
     if [[ "$CONF_TYPE" == "yaml" ]]; then
         yaml_start
     fi
     if [[ "$CONF_TYPE" == "caddy" ]]; then
         caddy_start
+    fi
+    if [[ "$CONF_TYPE" == "json" ]]; then
+        json_start
     fi
 else
     caddy_start

@@ -1,0 +1,83 @@
+{
+    "logging": {
+            "logs": {
+                    "default": {
+                            "exclude": [
+                                    "http.log.access.log0"
+                            ]
+                    },
+                    "log0": {
+                            "writer": {
+                                    "filename": "/app/logs/access.log",
+                                    "output": "file"
+                            },
+                            "level": "WARN",
+                            "include": [
+                                    "http.log.access.log0"
+                            ]
+                    }
+            }
+    },
+    "apps": {
+            "http": {
+                    "http_port": 8080,
+                    "https_port": 8443,
+                    "servers": {
+                            "srv0": {
+                                    "listen": [
+                                            ":8080"
+                                    ],
+                                    "routes": [
+                                            {
+                                                    "handle": [
+                                                            {
+                                                                    "handler": "vars",
+                                                                    "root": "/var/www"
+                                                            }
+                                                    ]
+                                            },
+                                            {
+                                                    "match": [
+                                                            {
+                                                                    "not": [
+                                                                            {
+                                                                                    "remote_ip": {
+                                                                                            "ranges": [
+                                                                                                    "192.168.0.0/16",
+                                                                                                    "172.16.0.0/12",
+                                                                                                    "10.0.0.0/8",
+                                                                                                    "127.0.0.1/8",
+                                                                                                    "fd00::/8",
+                                                                                                    "::1"
+                                                                                            ]
+                                                                                    }
+                                                                            }
+                                                                    ]
+                                                            }
+                                                    ],
+                                                    "handle": [
+                                                            {
+                                                                    "abort": true,
+                                                                    "handler": "static_response"
+                                                            }
+                                                    ]
+                                            },
+                                            {
+                                                    "handle": [
+                                                            {
+                                                                    "handler": "file_server",
+                                                                    "hide": [
+                                                                            "./Caddyfile"
+                                                                    ]
+                                                            }
+                                                    ]
+                                            }
+                                    ],
+                                    "logs": {
+                                            "default_logger_name": "log0"
+                                    }
+                            }
+                    }
+            }
+    }
+}

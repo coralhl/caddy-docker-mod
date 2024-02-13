@@ -33,6 +33,7 @@ COPY files/build-json.sh /usr/bin/build-json
 COPY files/start.sh /start.sh
 COPY files/Caddyfile /tmp/Caddyfile
 COPY files/config.yaml /tmp/config.yaml
+COPY files/config.json /tmp/config.json
 
 ENV TZ=Europe/Moscow
 
