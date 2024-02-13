@@ -49,6 +49,7 @@ RUN set -eux \
         /home/user \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     && mkdir -p /var/log/supervisor \
+    && mkdir -p /etc/supervisor/conf.d \
     && chmod +x /start.sh \
     && chmod +x /usr/bin/lsiown \
     && chmod +x /usr/bin/build-json
